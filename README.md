@@ -1,6 +1,10 @@
 ##### 使用方法：
 
-使用docker构建（抱歉我php-apache实在下载不下来又找不到镜像源，就没有测试过）
+使用github actions构建（Docker Desktop总是抽风又没有报错信息只能用github了😭😭）
+
+可使用以下命令拉取
+
+docker pull ghcr.io/lonelysam3/redrock_winter_accessment_2026_web:aca05466e88336b3296e4af052b91c6d2ed93e21
 
 调试时使用XMAPP集成环境
 
@@ -23,6 +27,7 @@
 ```
 ├── src/
 	├── buy_now.php
+	├── index.php
 	├── cart.php
 	├── checkout.php
 	├── create_direct_order.php
@@ -50,6 +55,7 @@
 
 ##### 文件作用：
 
+index.php: 跳转到商城首页
 buy_now.php: 不加入购物车直接购买页面
 cart.php：购物车页面
 checkout.php：下单页面
