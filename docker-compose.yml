@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # PHP + Apache 服务
   web:
     build: 
       context: .
@@ -9,30 +8,29 @@ services:
     container_name: shopping-website
     restart: always
     ports:
-      - "8080:80"
+      - "${APP_PORT:-8080}:80"  # 使用环境变量
     volumes:
       - ./src:/var/www/html
       - uploads:/var/www/html/uploads
     environment:
-      - DB_HOST=db
-      - DB_NAME=shopping_db
-      - DB_USER=shopping_user
-      - DB_PASSWORD=shopping_password
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
       - db
     networks:
       - shopping-network
 
-  # MySQL 数据库服务
   db:
     image: mysql:8.0
     container_name: shopping-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: shopping_db
-      MYSQL_USER: shopping_user
-      MYSQL_PASSWORD: shopping_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -42,29 +40,26 @@ services:
     networks:
       - shopping-network
 
-  # phpMyAdmin (可选，用于管理数据库)
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: shopping-phpmyadmin
     restart: always
     ports:
-      - "8081:80"
+      - "${PMA_PORT:-8081}:80"
     environment:
       PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       - db
     networks:
       - shopping-network
 
-# 数据卷
 volumes:
   db_data:
     driver: local
   uploads:
     driver: local
 
-# 网络
 networks:
   shopping-network:
     driver: bridge

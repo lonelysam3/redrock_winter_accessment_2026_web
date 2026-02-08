@@ -19,7 +19,7 @@ try {
     // 查询数据库，查找用户
     $sql = "SELECT * FROM users WHERE username = :username";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([':username' => $username]);  // 确保与上面一致
+    $stmt->execute([':username' => $username]);
     $user = $stmt->fetch();
     
     // 验证用户是否存在和密码是否正确

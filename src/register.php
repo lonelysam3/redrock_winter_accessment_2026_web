@@ -1,8 +1,4 @@
 <?php
-// 启动会话（用于可能的会话操作）
-session_start();
-
-// 引入数据库连接
 require_once 'db_connect.php';
 
 // 设置页面标题
@@ -25,40 +21,157 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = '两次输入的密码不一致';
     } elseif (strlen($password) < 6) {
         $error = '密码至少需要6位';
-    } elseif (strlen($username) < 3 || strlen($username) > 20) {
-        $error = '用户名长度应在3-20个字符之间';
     } else {
         try {
             // 检查用户名是否已存在
-            $sql = "SELECT id FROM users WHERE username = ?";
+            $sql = "SELECT id FROM users WHERE username = :username";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$username]);
+            $stmt->execute([':username' => $username]);
             
             if ($stmt->rowCount() > 0) {
                 $error = '用户名已存在';
             } else {
-                // 对密码进行哈希处理
-                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                
-                // 使用问号占位符避免参数绑定问题
-                $sql = "INSERT INTO users (username, password, email, balance) VALUES (?, ?, ?, 100000)";
+                // 插入新用户（注意：这里密码是明文存储，实际应用中应该使用哈希）
+                $sql = "INSERT INTO users (username, password, email, balance) VALUES (:username, :password, :email, 100000)";
                 $stmt = $pdo->prepare($sql);
-                
-                // 使用数组传递参数，确保参数顺序正确
-                $stmt->execute([$username, $hashed_password, $email]);
+                $stmt->execute([
+                    ':username' => $username,
+                    ':password' => $password,  // 注意：实际应用中应该使用 password_hash
+                    ':email' => $email
+                ]);
                 
                 $success = '注册成功！正在跳转到登录页面...';
                 header("refresh:2;url=login.php");
             }
         } catch(PDOException $e) {
-            // 详细的错误信息（开发阶段可用）
             $error = '注册失败：' . $e->getMessage();
-            
-            // 生产环境使用简化的错误信息
-            // $error = '注册失败，请稍后再试';
         }
     }
 }
+
+// 页面特定的CSS
+$pageStyles = '
+<style>
+    /* 注册页面样式 */
+    .register-container {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+    
+    .register-card {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .register-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .register-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    
+    .register-icon i {
+        font-size: 36px;
+        color: white;
+    }
+    
+    .register-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 10px;
+    }
+    
+    .register-subtitle {
+        color: var(--gray-color);
+        font-size: 16px;
+    }
+    
+    .register-form .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .register-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+    
+    .register-form input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+    
+    .register-form input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        outline: none;
+    }
+    
+    .register-button {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+    }
+    
+    .register-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
+    }
+    
+    .login-link {
+        text-align: center;
+        margin-top: 30px;
+        color: var(--gray-color);
+    }
+    
+    .login-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .password-requirements {
+        font-size: 12px;
+        color: var(--gray-color);
+        margin-top: 5px;
+    }
+    
+    @media (max-width: 576px) {
+        .register-card {
+            padding: 30px 20px;
+        }
+        
+        .register-title {
+            font-size: 24px;
+        }
+    }
+</style>
+';
 ?>
 
 <!DOCTYPE html>
@@ -173,145 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #f5c6cb;
         }
         
-        /* 注册页面样式 */
-        .register-container {
-            max-width: 450px;
-            margin: 0 auto;
-        }
-        
-        .register-card {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin: 30px 0;
-        }
-        
-        .register-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .register-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
-        
-        .register-icon i {
-            font-size: 36px;
-            color: white;
-        }
-        
-        .register-title {
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--dark-color);
-            margin-bottom: 10px;
-        }
-        
-        .register-subtitle {
-            color: var(--gray-color);
-            font-size: 16px;
-        }
-        
-        .register-form .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .register-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark-color);
-        }
-        
-        .register-form input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .register-form input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
-            outline: none;
-        }
-        
-        .register-button {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-        
-        .register-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.3);
-        }
-        
-        .login-link {
-            text-align: center;
-            margin-top: 30px;
-            color: var(--gray-color);
-        }
-        
-        .login-link a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .password-requirements {
-            font-size: 12px;
-            color: var(--gray-color);
-            margin-top: 5px;
-        }
-        
-        .form-requirements {
-            font-size: 12px;
-            color: var(--gray-color);
-            margin-top: 5px;
-            line-height: 1.4;
-        }
-        
-        @media (max-width: 576px) {
-            .register-card {
-                padding: 30px 20px;
-            }
-            
-            .register-title {
-                font-size: 24px;
-            }
-            
-            .container {
-                min-width: auto;
-                padding: 0 10px;
-            }
-        }
-        
-        /* 响应式调整 */
-        @media (max-width: 1000px) {
-            .container {
-                min-width: auto;
-                width: 100%;
-            }
-        }
+        <?php echo $pageStyles; ?>
     </style>
 </head>
 <body>
@@ -365,7 +340,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                placeholder="请输入用户名（3-20位字符）" 
                                value="<?php echo htmlspecialchars($username ?? ''); ?>" 
                                required minlength="3" maxlength="20">
-                        <div class="form-requirements">用户名长度应在3-20个字符之间，只能包含字母、数字和下划线</div>
                     </div>
                     
                     <div class="form-group">
@@ -373,7 +347,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="email" id="email" name="email" 
                                placeholder="请输入邮箱（可选）" 
                                value="<?php echo htmlspecialchars($email ?? ''); ?>">
-                        <div class="form-requirements">请输入有效的邮箱地址，用于密码找回和通知</div>
                     </div>
                     
                     <div class="form-group">
@@ -381,7 +354,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="password" id="password" name="password" 
                                placeholder="请输入密码（至少6位）" 
                                required minlength="6">
-                        <div class="password-requirements">密码至少需要6位字符，建议使用字母、数字和符号的组合</div>
+                        <div class="password-requirements">密码至少需要6位字符</div>
                     </div>
                     
                     <div class="form-group">
@@ -408,122 +381,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 表单验证
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('.register-form');
-            const username = document.getElementById('username');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirm_password');
-            const email = document.getElementById('email');
             
-            // 用户名验证（字母、数字、下划线）
-            function validateUsername(username) {
-                const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-                return usernameRegex.test(username);
-            }
-            
-            // 密码强度验证
-            function validatePassword(password) {
-                // 至少6位
-                if (password.length < 6) return false;
-                // 可以添加更复杂的规则
+            form.addEventListener('submit', function(e) {
+                // 检查密码是否一致
+                if (password.value !== confirmPassword.value) {
+                    e.preventDefault();
+                    alert('两次输入的密码不一致，请重新输入！');
+                    confirmPassword.focus();
+                    return false;
+                }
+                
+                // 检查密码强度
+                if (password.value.length < 6) {
+                    e.preventDefault();
+                    alert('密码长度至少为6位！');
+                    password.focus();
+                    return false;
+                }
+                
                 return true;
-            }
-            
-            // 邮箱验证（可选）
-            function validateEmail(email) {
-                if (!email) return true; // 邮箱可选
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email);
-            }
-            
-            // 实时验证用户名
-            username.addEventListener('blur', function() {
-                const value = username.value.trim();
-                if (value && !validateUsername(value)) {
-                    username.style.borderColor = 'red';
-                    showError(username, '用户名只能包含字母、数字和下划线，长度3-20位');
-                } else {
-                    username.style.borderColor = '';
-                    clearError(username);
-                }
-            });
-            
-            // 实时验证邮箱
-            email.addEventListener('blur', function() {
-                const value = email.value.trim();
-                if (value && !validateEmail(value)) {
-                    email.style.borderColor = 'red';
-                    showError(email, '请输入有效的邮箱地址');
-                } else {
-                    email.style.borderColor = '';
-                    clearError(email);
-                }
             });
             
             // 实时检查密码一致性
             confirmPassword.addEventListener('input', function() {
                 if (password.value !== confirmPassword.value) {
                     confirmPassword.style.borderColor = 'red';
-                    showError(confirmPassword, '两次输入的密码不一致');
                 } else {
                     confirmPassword.style.borderColor = '';
-                    clearError(confirmPassword);
                 }
-            });
-            
-            // 显示错误信息
-            function showError(input, message) {
-                clearError(input);
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.style.color = 'red';
-                errorDiv.style.fontSize = '12px';
-                errorDiv.style.marginTop = '5px';
-                errorDiv.textContent = message;
-                input.parentNode.appendChild(errorDiv);
-            }
-            
-            // 清除错误信息
-            function clearError(input) {
-                const existingError = input.parentNode.querySelector('.error-message');
-                if (existingError) {
-                    existingError.remove();
-                }
-            }
-            
-            // 表单提交验证
-            form.addEventListener('submit', function(e) {
-                let isValid = true;
-                let errorMessage = '';
-                
-                // 验证用户名
-                if (!validateUsername(username.value.trim())) {
-                    isValid = false;
-                    errorMessage = '用户名格式不正确（只能包含字母、数字和下划线，长度3-20位）';
-                }
-                
-                // 验证邮箱
-                else if (!validateEmail(email.value.trim())) {
-                    isValid = false;
-                    errorMessage = '邮箱格式不正确';
-                }
-                
-                // 验证密码长度
-                else if (!validatePassword(password.value)) {
-                    isValid = false;
-                    errorMessage = '密码长度至少为6位';
-                }
-                
-                // 验证密码一致性
-                else if (password.value !== confirmPassword.value) {
-                    isValid = false;
-                    errorMessage = '两次输入的密码不一致';
-                }
-                
-                if (!isValid) {
-                    e.preventDefault();
-                    alert(errorMessage);
-                }
-                
-                return isValid;
             });
             
             // 自动隐藏消息提示

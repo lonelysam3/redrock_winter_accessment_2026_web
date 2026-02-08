@@ -1,7 +1,4 @@
 <?php
-// 启动会话
-session_start();
-
 // 设置页面标题
 $pageTitle = '用户登录';
 
@@ -26,53 +23,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // 查询数据库，查找用户
-            $sql = "SELECT * FROM users WHERE username = ?";
+            $sql = "SELECT * FROM users WHERE username = :username";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$username]);  // 使用问号占位符，避免参数绑定问题
+            $stmt->execute([':username' => $username]);
             $user = $stmt->fetch();
             
             // 验证用户是否存在和密码是否正确
-            if ($user) {
-                // 先检查密码是否为哈希格式（以 $2y$ 开头）
-                if (strpos($user['password'], '$2y$') === 0) {
-                    // 哈希密码验证
-                    if (password_verify($password, $user['password'])) {
-                        loginSuccess($user);
-                    } else {
-                        $error = '用户名或密码错误';
-                    }
-                } else {
-                    // 明文密码验证（向后兼容）
-                    if ($password === $user['password']) {
-                        loginSuccess($user);
-                    } else {
-                        $error = '用户名或密码错误';
-                    }
-                }
+            if ($user && password_verify($password, $user['password'])) {
+                // 登录成功
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                
+                // 跳转到个人中心或返回页面
+                $redirect = $_GET['redirect'] ?? 'welcome.php';
+                header("Location: " . $redirect);
+                exit();
             } else {
                 $error = '用户名或密码错误';
             }
             
         } catch(PDOException $e) {
             $error = '系统错误，请稍后再试';
-            // 调试模式下的错误信息
-            // $error = '系统错误：' . $e->getMessage();
         }
     }
-}
-
-/**
- * 登录成功处理函数
- */
-function loginSuccess($user) {
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['username'] = $user['username'];
-    $_SESSION['email'] = $user['email'];
-    
-    // 跳转到个人中心或返回页面
-    $redirect = $_GET['redirect'] ?? 'welcome.php';
-    header("Location: " . $redirect);
-    exit();
 }
 
 // 页面特定的CSS
@@ -83,7 +57,6 @@ $pageStyles = '
         max-width: 450px;
         min-width: 400px;
         margin: 0 auto;
-        padding: 20px 0;
     }
     
     .login-card {
@@ -213,7 +186,7 @@ $pageStyles = '
         color: var(--gray-color);
         position: relative;
     }
-    
+      
     .register-link {
         text-align: center;
         margin-top: 30px;
@@ -224,26 +197,6 @@ $pageStyles = '
         color: var(--primary-color);
         text-decoration: none;
         font-weight: 600;
-    }
-    
-    /* 错误信息样式 */
-    .alert {
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 14px;
-    }
-    
-    .alert-error {
-        background-color: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #991b1b;
-    }
-    
-    .alert-success {
-        background-color: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        color: #166534;
     }
     
 </style>
@@ -271,19 +224,11 @@ require_once 'header.php';
             </div>
         <?php endif; ?>
         
-        <!-- 成功信息 -->
-        <?php if ($success): ?>
-            <div class="alert alert-success">
-                <span><?php echo htmlspecialchars($success); ?></span>
-            </div>
-        <?php endif; ?>
-        
         <!-- 登录表单 -->
         <form class="login-form" method="POST" action="">
             <div class="form-group">
                 <label for="username">用户名</label>
-                <input type="text" id="username" name="username" placeholder="请输入用户名" required
-                       value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+                <input type="text" id="username" name="username" placeholder="请输入用户名" required>
             </div>
             
             <div class="form-group">
