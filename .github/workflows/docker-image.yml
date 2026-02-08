@@ -15,4 +15,8 @@ jobs:
     
     - name: Build Docker image
       run: |
-        docker build.
+        docker-compose build.
+
+    - name: Run
+      run: |
+        docker-compose up -d
