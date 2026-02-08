@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+            <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="300" height="200" fill="#667eea"/>
+                <circle cx="150" cy="70" r="40" fill="white" opacity="0.2"/>
+                <text x="150" y="120" font-family="Arial" font-size="18" text-anchor="middle" fill="white">瑜伽垫</text>
+                <text x="150" y="150" font-family="Arial" font-size="12" text-anchor="middle" fill="white" opacity="0.8">商品图片</text>
+            </svg>

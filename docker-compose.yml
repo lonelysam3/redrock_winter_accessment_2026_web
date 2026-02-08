@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # PHP + Apache 服务
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: shopping-website
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+      - uploads:/var/www/html/uploads
+    environment:
+      - DB_HOST=db
+      - DB_NAME=shopping_db
+      - DB_USER=shopping_user
+      - DB_PASSWORD=shopping_password
+    depends_on:
+      - db
+    networks:
+      - shopping-network
+
+  # MySQL 数据库服务
+  db:
+    image: mysql:8.0
+    container_name: shopping-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: shopping_db
+      MYSQL_USER: shopping_user
+      MYSQL_PASSWORD: shopping_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - shopping-network
+
+  # phpMyAdmin (可选，用于管理数据库)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: shopping-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root_password
+    depends_on:
+      - db
+    networks:
+      - shopping-network
+
+# 数据卷
+volumes:
+  db_data:
+    driver: local
+  uploads:
+    driver: local
+
+# 网络
+networks:
+  shopping-network:
+    driver: bridge
