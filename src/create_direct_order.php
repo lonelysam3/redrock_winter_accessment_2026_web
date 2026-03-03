@@ -21,6 +21,12 @@ if (!$user) {
 $product_id = $_POST['product_id'] ?? 0;
 $quantity = max(1, intval($_POST['quantity'] ?? 1));
 
+// 验证 CSRF 令牌
+if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+    header("Location: products.php?error=请求无效");
+    exit();
+}
+
 if (!$product_id) {
     header("Location: products.php");
     exit();

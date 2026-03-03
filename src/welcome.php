@@ -31,6 +31,11 @@ $message = '';
 $message_type = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 验证 CSRF 令牌
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message = '请求无效，请刷新页面后重试';
+        $message_type = 'error';
+    } else {
     // 更新个人信息
     if (isset($_POST['update_profile'])) {
         $full_name = trim($_POST['full_name'] ?? '');
@@ -59,7 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = getCurrentUser($pdo);
             
         } catch(PDOException $e) {
-            $message = '更新失败：' . $e->getMessage();
+            error_log("更新个人信息失败: " . $e->getMessage());
+            $message = '更新失败，请稍后再试';
             $message_type = 'error';
         }
     }
@@ -92,7 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = getCurrentUser($pdo);
             
         } catch (PDOException $e) {
-            $message = '更新失败：' . $e->getMessage();
+            error_log("更新收货地址失败: " . $e->getMessage());
+            $message = '更新失败，请稍后再试';
             $message_type = 'error';
         }
     }
@@ -101,42 +108,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_avatar']) && isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
         $avatar = $_FILES['avatar'];
         
-        // 允许的文件类型
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        
-        if (in_array($avatar['type'], $allowed_types)) {
-            // 生成唯一文件名
-            $extension = pathinfo($avatar['name'], PATHINFO_EXTENSION);
-            $filename = 'avatar_' . $user['id'] . '_' . time() . '.' . $extension;
-            $upload_path = 'uploads/avatars/' . $filename;
-            
-            // 确保上传目录存在
-            if (!is_dir('uploads/avatars')) {
-                mkdir('uploads/avatars', 0755, true);
+        // 文件大小限制：2MB
+        $max_size = 2 * 1024 * 1024;
+        if ($avatar['size'] > $max_size) {
+            $message = '图片文件大小不能超过 2MB';
+            $message_type = 'error';
+        } elseif (!function_exists('finfo_open')) {
+            $message = '服务器不支持文件类型检测，请联系管理员';
+            $message_type = 'error';
+        } else {
+            // 使用 finfo 检测实际 MIME 类型，而非客户端提供的类型
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $actualType = $finfo->file($avatar['tmp_name']);
+            if ($actualType === false) {
+                $message = '无法检测文件类型，请重试';
+                $message_type = 'error';
+                $actualType = '';
             }
             
-            // 移动上传的文件
-            if (move_uploaded_file($avatar['tmp_name'], $upload_path)) {
-                // 更新数据库
-                $sql = "UPDATE users SET avatar = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([$filename, $user['id']]);
+            $type_to_ext = [
+                'image/jpeg' => 'jpg',
+                'image/png'  => 'png',
+                'image/gif'  => 'gif',
+                'image/webp' => 'webp'
+            ];
+            
+            if (array_key_exists($actualType, $type_to_ext)) {
+                // 根据实际检测的类型决定扩展名，不信任客户端文件名
+                $extension = $type_to_ext[$actualType];
+                $filename = 'avatar_' . $user['id'] . '_' . time() . '.' . $extension;
+                $upload_path = 'uploads/avatars/' . $filename;
                 
-                $message = '头像更新成功！';
-                $message_type = 'success';
+                // 确保上传目录存在
+                if (!is_dir('uploads/avatars')) {
+                    mkdir('uploads/avatars', 0755, true);
+                }
                 
-                // 刷新用户数据
-                $user = getCurrentUser($pdo);
-                
+                // 移动上传的文件
+                if (move_uploaded_file($avatar['tmp_name'], $upload_path)) {
+                    // 更新数据库
+                    $sql = "UPDATE users SET avatar = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([$filename, $user['id']]);
+                    
+                    $message = '头像更新成功！';
+                    $message_type = 'success';
+                    
+                    // 刷新用户数据
+                    $user = getCurrentUser($pdo);
+                    
+                } else {
+                    $message = '文件上传失败';
+                    $message_type = 'error';
+                }
             } else {
-                $message = '文件上传失败';
+                $message = '只允许上传 JPG, PNG, GIF 或 WebP 格式的图片';
                 $message_type = 'error';
             }
-        } else {
-            $message = '只允许上传 JPG, PNG, GIF 或 WebP 格式的图片';
-            $message_type = 'error';
         }
-    }
+    } // end update_avatar if
+    } // end CSRF valid else block
 }
 ?>
 
@@ -647,6 +678,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     
                     <form method="POST" enctype="multipart/form-data" style="display: none;">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                         <input type="file" id="avatarInput" name="avatar" accept="image/*" onchange="this.form.submit()">
                         <input type="hidden" name="update_avatar" value="1">
                     </form>
@@ -685,6 +717,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2 class="section-title">个人信息</h2>
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="full_name">姓名</label>
@@ -738,6 +771,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-section">
                 <h2 class="section-title">收货地址</h2>
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="province">省份</label>

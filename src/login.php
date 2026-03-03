@@ -2,6 +2,8 @@
 // 设置页面标题
 $pageTitle = '用户登录';
 
+require_once 'db_connect.php';
+
 // 处理登录逻辑
 $error = '';
 $success = '';
@@ -13,38 +15,52 @@ if (isset($_GET['error'])) {
 
 // 处理登录
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once 'db_connect.php';
-    
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-    
-    if (empty($username) || empty($password)) {
-        $error = '请填写用户名和密码';
+    // 验证 CSRF 令牌
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $error = '请求无效，请刷新页面后重试';
     } else {
-        try {
-            // 查询数据库，查找用户
-            $sql = "SELECT * FROM users WHERE username = :username";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([':username' => $username]);
-            $user = $stmt->fetch();
-            
-            // 验证用户是否存在和密码是否正确
-            if ($user && password_verify($password, $user['password'])) {
-                // 登录成功
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['email'] = $user['email'];
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+        
+        if (empty($username) || empty($password)) {
+            $error = '请填写用户名和密码';
+        } else {
+            try {
+                // 查询数据库，查找用户
+                $sql = "SELECT * FROM users WHERE username = :username";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([':username' => $username]);
+                $user = $stmt->fetch();
                 
-                // 跳转到个人中心或返回页面
-                $redirect = $_GET['redirect'] ?? 'welcome.php';
-                header("Location: " . $redirect);
-                exit();
-            } else {
-                $error = '用户名或密码错误';
+                // 验证用户是否存在和密码是否正确
+                if ($user && password_verify($password, $user['password'])) {
+                    // 防止会话固定攻击
+                    session_regenerate_id(true);
+                    
+                    // 登录成功
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['email'] = $user['email'];
+                    
+                    // 跳转到个人中心或返回页面（只允许相对路径，防止开放重定向和目录穿越）
+                    $redirect = $_GET['redirect'] ?? 'welcome.php';
+                    if (
+                        strpos($redirect, '..') !== false ||
+                        strpos($redirect, '://') !== false ||
+                        strpos($redirect, '//') !== false ||
+                        !preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_.\-\/]*(\?[a-zA-Z0-9_.=&%\-]*)?$/', $redirect)
+                    ) {
+                        $redirect = 'welcome.php';
+                    }
+                    header("Location: " . $redirect);
+                    exit();
+                } else {
+                    $error = '用户名或密码错误';
+                }
+                
+            } catch(PDOException $e) {
+                $error = '系统错误，请稍后再试';
             }
-            
-        } catch(PDOException $e) {
-            $error = '系统错误，请稍后再试';
         }
     }
 }
@@ -226,6 +242,7 @@ require_once 'header.php';
         
         <!-- 登录表单 -->
         <form class="login-form" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
             <div class="form-group">
                 <label for="username">用户名</label>
                 <input type="text" id="username" name="username" placeholder="请输入用户名" required>

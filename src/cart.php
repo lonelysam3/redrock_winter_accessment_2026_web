@@ -45,6 +45,12 @@ $message = '';
 $message_type = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 验证 CSRF 令牌
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        header("Location: cart.php");
+        exit();
+    }
+    
     $action = $_POST['action'] ?? '';
     $item_id = intval($_POST['item_id'] ?? 0);
     $quantity = intval($_POST['quantity'] ?? 1);
@@ -75,7 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
             
         } catch (PDOException $e) {
-            $message = '更新失败：' . $e->getMessage();
+            error_log("更新购物车失败: " . $e->getMessage());
+            $message = '更新失败，请稍后再试';
             $message_type = 'error';
         }
     }
@@ -93,7 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
             
         } catch (PDOException $e) {
-            $message = '移除失败：' . $e->getMessage();
+            error_log("移除购物车商品失败: " . $e->getMessage());
+            $message = '移除失败，请稍后再试';
             $message_type = 'error';
         }
     }
@@ -111,7 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
             
         } catch (PDOException $e) {
-            $message = '清空失败：' . $e->getMessage();
+            error_log("清空购物车失败: " . $e->getMessage());
+            $message = '清空失败，请稍后再试';
             $message_type = 'error';
         }
     }
@@ -610,6 +619,7 @@ $cartCount = getCartCount($pdo, $user['id']);
                     </a>
                     <?php if (!empty($cartItems)): ?>
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                         <button type="submit" name="action" value="clear_cart" class="btn btn-outline" onclick="return confirm('确定要清空购物车吗？')">
                             <i class="fas fa-trash"></i> 清空购物车
                         </button>
@@ -661,6 +671,7 @@ $cartCount = getCartCount($pdo, $user['id']);
                             
                             <div class="item-actions">
                                 <form method="POST" class="quantity-form">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                                     <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
                                     <div class="quantity-control">
                                         <button type="button" class="quantity-btn" onclick="updateQuantity(<?php echo $item['id']; ?>, -1)">-</button>
@@ -676,6 +687,7 @@ $cartCount = getCartCount($pdo, $user['id']);
                                 <div class="item-subtotal">¥<?php echo number_format($item['subtotal'], 2); ?></div>
                                 
                                 <form method="POST">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                                     <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
                                     <input type="hidden" name="action" value="remove_item">
                                     <button type="submit" class="remove-btn" onclick="return confirm('确定要移除这件商品吗？')">
@@ -728,6 +740,7 @@ $cartCount = getCartCount($pdo, $user['id']);
                         </div>
                         
                         <form method="POST" style="margin-top: 25px;">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                             <input type="hidden" name="action" value="checkout">
                             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 18px;">
                                 <i class="fas fa-credit-card"></i> 去结算

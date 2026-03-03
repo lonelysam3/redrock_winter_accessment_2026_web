@@ -142,9 +142,9 @@ INSERT INTO products (name, category_id, price, original_price, stock_quantity, 
 ('Mvegetable的电脑', 1, 3999.00, 4599.00, 25, 'Rycarl从水深火热中抢救而来，为什么水深火热你别管！', TRUE, FALSE, TRUE),
 
 
--- 插入测试用户（密码：password123）
+-- 插入测试用户（密码：password123，已使用 bcrypt 哈希存储）
 INSERT INTO users (username, password, email, balance) VALUES
-('Rycarl_loves_rea1ity', '123456', '1919810@cqupt.edu.cn', 10000.00);
+('Rycarl_loves_rea1ity', '$2y$10$oF0.UQZdESChr6p25GTdReZh8AxFVIk7CQK.S2BvRwDmV6eVvhaWu', '1919810@cqupt.edu.cn', 10000.00);
 
 -- 创建索引
 CREATE INDEX idx_products_category ON products(category_id);

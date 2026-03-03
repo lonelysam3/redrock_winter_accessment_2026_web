@@ -17,11 +17,11 @@ try {
     $pdo->exec("SET NAMES 'utf8mb4'");
     
 } catch(PDOException $e) {
-    // 如果连接失败，显示错误信息
+    // 不向用户暴露数据库错误详情
+    error_log("数据库连接失败: " . $e->getMessage());
     die("<div style='color:red;padding:20px;'>
-        <h3>数据库连接失败</h3>
-        <p>错误信息：" . $e->getMessage() . "</p>
-        <p>请检查数据库连接配置</p>
+        <h3>服务暂时不可用</h3>
+        <p>请稍后再试或联系管理员</p>
     </div>");
 }
 
@@ -38,5 +38,23 @@ function getCurrentUser($pdo) {
     } catch(PDOException $e) {
         return null;
     }
+}
+
+// 生成 CSRF 令牌
+function generateCsrfToken() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+// 验证 CSRF 令牌（验证后自动轮换，防止重放攻击）
+function verifyCsrfToken($token) {
+    if (!isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], (string)$token)) {
+        return false;
+    }
+    // 验证成功后轮换令牌
+    unset($_SESSION['csrf_token']);
+    return true;
 }
 ?>
