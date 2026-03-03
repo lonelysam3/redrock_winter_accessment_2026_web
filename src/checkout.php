@@ -50,7 +50,10 @@ if (empty($cartItems)) {
 
 // 处理支付提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['confirm_order'])) {
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message = '请求无效，请刷新页面后重试';
+        $message_type = 'error';
+    } elseif (isset($_POST['confirm_order'])) {
         try {
             $pdo->beginTransaction();
             
@@ -143,7 +146,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
         } catch (Exception $e) {
             $pdo->rollBack();
-            $message = '订单创建失败: ' . $e->getMessage();
+            error_log("订单创建失败: " . $e->getMessage());
+            $message = '订单创建失败，请稍后再试';
             $message_type = 'error';
         }
     }
@@ -731,6 +735,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <!-- 支付按钮 -->
                     <form method="POST">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                         <?php 
                         $hasAddress = !empty($user['detailed_address']);
                         $hasSufficientBalance = ($user['balance'] / 100) >= $totalAmount;

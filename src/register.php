@@ -9,42 +9,48 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
-    $email = trim($_POST['email'] ?? '');
-    
-    // 验证输入
-    if (empty($username) || empty($password) || empty($confirm_password)) {
-        $error = '请填写所有必填字段';
-    } elseif ($password !== $confirm_password) {
-        $error = '两次输入的密码不一致';
-    } elseif (strlen($password) < 6) {
-        $error = '密码至少需要6位';
+    // 验证 CSRF 令牌
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $error = '请求无效，请刷新页面后重试';
     } else {
-        try {
-            // 检查用户名是否已存在
-            $sql = "SELECT id FROM users WHERE username = :username";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([':username' => $username]);
-            
-            if ($stmt->rowCount() > 0) {
-                $error = '用户名已存在';
-            } else {
-                // 插入新用户（注意：这里密码是明文存储，实际应用中应该使用哈希）
-                $sql = "INSERT INTO users (username, password, email, balance) VALUES (:username, :password, :email, 100000)";
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        $email = trim($_POST['email'] ?? '');
+        
+        // 验证输入
+        if (empty($username) || empty($password) || empty($confirm_password)) {
+            $error = '请填写所有必填字段';
+        } elseif ($password !== $confirm_password) {
+            $error = '两次输入的密码不一致';
+        } elseif (strlen($password) < 6) {
+            $error = '密码至少需要6位';
+        } else {
+            try {
+                // 检查用户名是否已存在
+                $sql = "SELECT id FROM users WHERE username = :username";
                 $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    ':username' => $username,
-                    ':password' => $password,  // 注意：实际应用中应该使用 password_hash
-                    ':email' => $email
-                ]);
+                $stmt->execute([':username' => $username]);
                 
-                $success = '注册成功！正在跳转到登录页面...';
-                header("refresh:2;url=login.php");
+                if ($stmt->rowCount() > 0) {
+                    $error = '用户名已存在';
+                } else {
+                    // 使用 password_hash 安全存储密码
+                    $sql = "INSERT INTO users (username, password, email, balance) VALUES (:username, :password, :email, 100000)";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([
+                        ':username' => $username,
+                        ':password' => password_hash($password, PASSWORD_DEFAULT),
+                        ':email' => $email
+                    ]);
+                    
+                    $success = '注册成功！正在跳转到登录页面...';
+                    header("refresh:2;url=login.php");
+                }
+            } catch(PDOException $e) {
+                error_log("注册失败: " . $e->getMessage());
+                $error = '注册失败，请稍后再试';
             }
-        } catch(PDOException $e) {
-            $error = '注册失败：' . $e->getMessage();
         }
     }
 }
@@ -334,6 +340,7 @@ $pageStyles = '
                 
                 <!-- 注册表单 -->
                 <form class="register-form" method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                     <div class="form-group">
                         <label for="username">用户名 *</label>
                         <input type="text" id="username" name="username" 

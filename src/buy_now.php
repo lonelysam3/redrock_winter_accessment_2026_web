@@ -494,6 +494,7 @@ $totalAmount = $product['price'] * $quantity;
                 
                 <!-- 支付按钮 -->
                 <form method="POST" action="create_direct_order.php">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                     <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                     <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
                     

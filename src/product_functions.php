@@ -105,14 +105,7 @@ function getProducts($pdo, $params = []) {
         ];
         
     } catch (PDOException $e) {
-        // 显示错误信息以便调试
-        echo "<div style='background:#f8d7da;color:#721c24;padding:15px;margin:10px;border:1px solid #f5c6cb;border-radius:5px;'>";
-        echo "<h3>数据库查询错误</h3>";
-        echo "<p><strong>错误信息：</strong>" . htmlspecialchars($e->getMessage()) . "</p>";
-        echo "<p><strong>SQL语句：</strong>" . htmlspecialchars($sql) . "</p>";
-        echo "<p><strong>参数：</strong>" . htmlspecialchars(print_r($values, true)) . "</p>";
-        echo "</div>";
-        
+        error_log("数据库查询错误: " . $e->getMessage() . " SQL: " . $sql);
         return ['products' => [], 'total' => 0, 'pages' => 0];
     }
 }
