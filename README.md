@@ -6,6 +6,13 @@
 
 docker pull ghcr.io/lonelysam3/redrock_winter_accessment_2026_web:aca05466e88336b3296e4af052b91c6d2ed93e21
 
+**首次运行前，必须先创建 `.env` 文件（否则 docker-compose 会提示环境变量未设置）：**
+
+```bash
+cp .env.example .env
+# 然后编辑 .env，填入真实的数据库密码等信息
+```
+
 调试时使用XMAPP集成环境
 
 ##### 已完成功能：
