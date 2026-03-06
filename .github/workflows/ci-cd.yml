@@ -29,12 +29,28 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         docker-compose --version
     
-    # 3. 构建镜像
+    # 3. 创建测试用 .env 文件
+    - name: Create .env for CI
+      run: |
+        printf '%s\n' \
+          'APP_PORT=8080' \
+          'PMA_PORT=8081' \
+          'DB_HOST=db' \
+          'DB_NAME=shopping_db' \
+          'DB_USER=shopping_user' \
+          'DB_PASSWORD=shopping_password' \
+          'MYSQL_ROOT_PASSWORD=ci_root_password' \
+          'MYSQL_DATABASE=shopping_db' \
+          'MYSQL_USER=shopping_user' \
+          'MYSQL_PASSWORD=shopping_password' \
+          > .env
+
+    # 4. 构建镜像
     - name: Build Docker images
       run: |
         docker-compose build
     
-    # 4. 启动服务测试
+    # 5. 启动服务测试
     - name: Start services for testing
       run: |
         # 启动服务
