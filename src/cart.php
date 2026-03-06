@@ -234,7 +234,7 @@ $pageStyles = '
                                     }
                                 }
                                 
-                                if ($image_path && file_exists($image_path)) {
+                                if ($image_path) {
                                     echo '<img src="' . htmlspecialchars($image_path) . '" 
                                         alt="' . htmlspecialchars($item['name']) . '">';
                                 } else {
