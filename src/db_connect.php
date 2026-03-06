@@ -6,6 +6,29 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// 当环境变量未设置时（本地 XAMPP 开发），尝试从项目根目录的 .env 文件加载配置
+if (getenv('DB_USER') === false) {
+    $envFile = __DIR__ . '/../.env';
+    if (file_exists($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            // 跳过空行、注释行和不含等号的无效行
+            if ($line === '' || strpos($line, '=') === false || $line[0] === '#') {
+                continue;
+            }
+            [$key, $value] = explode('=', $line, 2);
+            $key   = trim($key);
+            $value = trim($value);
+            // 去除值两端的引号（单引号或双引号），$m[2] 为去除引号后的值
+            if (preg_match('/^(["\'])(.*)\1$/', $value, $m)) {
+                $value = $m[2];
+            }
+            putenv("$key=$value");
+        }
+    }
+}
+
 // 数据库连接信息（所有凭据均从环境变量读取，不使用硬编码默认值）
 $host     = getenv('DB_HOST') ?: 'localhost';
 $dbname   = getenv('DB_NAME') ?: 'shopping_db';
@@ -13,7 +36,7 @@ $username = getenv('DB_USER');
 $password = getenv('DB_PASSWORD');
 
 // 凭据缺失时快速失败，避免以空凭据连接数据库
-if ($username === false || $username === '' || $password === false) {
+if ($username === false || $username === '' || $password === false || $password === '') {
     error_log("数据库凭据未配置：请在环境变量中设置 DB_USER 和 DB_PASSWORD");
     die("<div style='color:red;padding:20px;'>
         <h3>服务暂时不可用</h3>
