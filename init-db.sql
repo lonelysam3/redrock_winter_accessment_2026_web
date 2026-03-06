@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     district VARCHAR(50),
     detailed_address TEXT,
     zipcode VARCHAR(10),
-    balance DECIMAL(10,2) DEFAULT 10000.00, -- 新用户默认有100,000元
+    balance DECIMAL(10,2) DEFAULT 10000.00, -- 新用户默认有10,000元
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -141,7 +141,6 @@ INSERT INTO products (name, category_id, price, original_price, stock_quantity, 
 ('华为Mate 60', 1, 6999.00, 7999.00, 40, '遥遥领先！', 'huawei-mate60.jpg', TRUE, TRUE, TRUE),
 ('Mvegetable的电脑', 1, 3999.00, 4599.00, 25, 'Rycarl从水深火热中抢救而来，为什么水深火热你别管！', 'mvegetable-pc.jpg', TRUE, FALSE, TRUE);
 
-
 -- 插入测试用户（密码：password123，已使用 bcrypt 哈希存储）
 INSERT INTO users (username, password, email, balance) VALUES
 ('Rycarl_loves_rea1ity', '$2y$10$oF0.UQZdESChr6p25GTdReZh8AxFVIk7CQK.S2BvRwDmV6eVvhaWu', '1919810@cqupt.edu.cn', 10000.00);
@@ -154,3 +153,13 @@ CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_reviews_product ON product_reviews(product_id);
 CREATE INDEX idx_reviews_user ON product_reviews(user_id);
+
+-- 最小权限原则：shopping_user 仅授予 DML 权限，不授予 DDL 或管理员权限
+-- Docker 的 MYSQL_USER 创建时默认无 DDL 权限，这里明确授予所需的 DML 权限
+GRANT SELECT, INSERT, UPDATE, DELETE ON shopping_db.* TO 'shopping_user'@'%';
+
+-- 专用健康检查用户：仅用于 Docker 健康检查，无任何数据访问权限。
+-- 其凭据无需保密，因此可以在 docker-compose.yml 的 healthcheck 命令中硬编码，
+-- 避免将 MYSQL_ROOT_PASSWORD 暴露在进程列表中。
+CREATE USER IF NOT EXISTS 'healthcheck'@'localhost' IDENTIFIED BY 'healthcheck';
+FLUSH PRIVILEGES;

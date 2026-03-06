@@ -29,15 +29,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
         header("Location: login.php");
         exit();
     }
-    
-    $quantity = max(1, intval($_POST['quantity'] ?? 1));
-    $result = addToCart($pdo, $_SESSION['user_id'], $product_id, $quantity);
-    
-    if ($result) {
-        $cartCount = getCartCount($pdo, $_SESSION['user_id']);
-        $successMessage = '商品已成功添加到购物车！';
+
+    // 验证 CSRF 令牌
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        error_log("CSRF validation failed for add_to_cart: user_id=" . ($_SESSION['user_id'] ?? 'n/a') . " ip=" . ($_SERVER['REMOTE_ADDR'] ?? 'n/a'));
+        $errorMessage = '请求无效，请刷新页面后重试';
     } else {
-        $errorMessage = '添加失败，请稍后重试';
+        $quantity = max(1, intval($_POST['quantity'] ?? 1));
+        $result = addToCart($pdo, $_SESSION['user_id'], $product_id, $quantity);
+
+        if ($result) {
+            $cartCount = getCartCount($pdo, $_SESSION['user_id']);
+            $successMessage = '商品已成功添加到购物车！';
+        } else {
+            $errorMessage = '添加失败，请稍后重试';
+        }
     }
 }
 
@@ -47,25 +53,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
         header("Location: login.php");
         exit();
     }
-    
-    $rating = intval($_POST['rating'] ?? 0);
-    $comment = trim($_POST['comment'] ?? '');
-    
-    if ($rating >= 1 && $rating <= 5 && !empty($comment)) {
-        try {
-            $sql = "INSERT INTO product_reviews (product_id, user_id, rating, comment) VALUES (?, ?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$product_id, $_SESSION['user_id'], $rating, $comment]);
-            $reviewSuccess = '评价提交成功！';
-            
-            // 刷新页面获取最新评价
-            header("Location: product_detail.php?id=" . $product_id);
-            exit();
-        } catch (PDOException $e) {
-            $reviewError = '提交失败：' . $e->getMessage();
-        }
+
+    // 验证 CSRF 令牌
+    if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        error_log("CSRF validation failed for submit_review: user_id=" . ($_SESSION['user_id'] ?? 'n/a') . " ip=" . ($_SERVER['REMOTE_ADDR'] ?? 'n/a'));
+        $reviewError = '请求无效，请刷新页面后重试';
     } else {
-        $reviewError = '请填写完整的评价信息';
+        $rating = intval($_POST['rating'] ?? 0);
+        $comment = trim($_POST['comment'] ?? '');
+
+        if ($rating >= 1 && $rating <= 5 && !empty($comment)) {
+            try {
+                $sql = "INSERT INTO product_reviews (product_id, user_id, rating, comment) VALUES (?, ?, ?, ?)";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([$product_id, $_SESSION['user_id'], $rating, $comment]);
+                $reviewSuccess = '评价提交成功！';
+
+                // 刷新页面获取最新评价
+                header("Location: product_detail.php?id=" . $product_id);
+                exit();
+            } catch (PDOException $e) {
+                error_log("提交评价失败: " . $e->getMessage());
+                $reviewError = '提交失败，请稍后重试';
+            }
+        } else {
+            $reviewError = '请填写完整的评价信息';
+        }
     }
 }
 
@@ -585,11 +598,11 @@ $pageTitle = $product['name'] . ' - 商品详情';
     <main class="container">
         <!-- 消息提示 -->
         <?php if (isset($successMessage)): ?>
-            <div class="message success"><?php echo $successMessage; ?></div>
+            <div class="message success"><?php echo htmlspecialchars($successMessage); ?></div>
         <?php endif; ?>
         
         <?php if (isset($errorMessage)): ?>
-            <div class="message error"><?php echo $errorMessage; ?></div>
+            <div class="message error"><?php echo htmlspecialchars($errorMessage); ?></div>
         <?php endif; ?>
 
         <!-- 商品详情主体 -->
@@ -667,6 +680,7 @@ $pageTitle = $product['name'] . ' - 商品详情';
                 <!-- 购买选项 -->
                 <div class="buy-options">
                     <form method="POST" action="">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                         <div class="quantity-selector">
                             <label>数量:</label>
                             <div class="quantity-control">
@@ -749,6 +763,7 @@ $pageTitle = $product['name'] . ' - 商品详情';
                     <?php if (isset($_SESSION['user_id'])): ?>
                     <div class="review-form">
                         <form method="POST" action="">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                             <h4>我要评价</h4>
                             <div class="rating-input">
                                 <span>评分:</span>
@@ -763,9 +778,9 @@ $pageTitle = $product['name'] . ' - 商品详情';
                             <button type="submit" name="submit_review" class="btn-buy-now" style="margin-top: 10px;">提交评价</button>
                             
                             <?php if (isset($reviewSuccess)): ?>
-                                <div class="message success"><?php echo $reviewSuccess; ?></div>
+                                <div class="message success"><?php echo htmlspecialchars($reviewSuccess); ?></div>
                             <?php elseif (isset($reviewError)): ?>
-                                <div class="message error"><?php echo $reviewError; ?></div>
+                                <div class="message error"><?php echo htmlspecialchars($reviewError); ?></div>
                             <?php endif; ?>
                         </form>
                     </div>
