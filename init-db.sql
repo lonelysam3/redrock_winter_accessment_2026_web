@@ -134,7 +134,7 @@ INSERT INTO categories (name, slug, sort_order) VALUES
 
 -- 插入测试商品
 INSERT INTO products (name, category_id, price, original_price, stock_quantity, description, main_image, is_active, is_new, is_hot) VALUES
-('Rycarl的非iphone手机', 1, 8999.00, 9999.00, 50, '学长严选，自用99新！', 'xiaomi13u.jpg', TRUE, TRUE, TRUE),
+('Rycarl的非iphone手机', 1, 8999.00, 9999.00, 50, '学长严选，自用99新！', 'iphone.jpg', TRUE, TRUE, TRUE),
 ('三星Note 7', 2, 2999.00, 3499.00, 30, '民用炸弹！', 'samsung-note7.jpg', TRUE, FALSE, TRUE),
 ('耐克绝不用新疆棉', 3, 599.00, 799.00, 100, '绝不用强制劳动的产品！', 'nike-shoes.jpg', TRUE, FALSE, FALSE),
 ('康师傅冰红茶', 4, 48.00, 60.00, 200, 'Man! What can I say? Manba out!', 'ice-tea.jpg', TRUE, FALSE, FALSE),
