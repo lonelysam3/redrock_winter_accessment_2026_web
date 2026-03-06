@@ -133,13 +133,13 @@ INSERT INTO categories (name, slug, sort_order) VALUES
 ('美妆个护', 'beauty-care', 5);
 
 -- 插入测试商品
-INSERT INTO products (name, category_id, price, original_price, stock_quantity, description, is_active, is_new, is_hot) VALUES
-('Rycarl的非iphone手机', 1, 8999.00, 9999.00, 50, '学长严选，自用99新！', TRUE, TRUE, TRUE),
-('三星Note 7', 2, 2999.00, 3499.00, 30, '民用炸弹！', TRUE, FALSE, TRUE),
-('耐克绝不用新疆棉', 3, 599.00, 799.00, 100, '绝不用强制劳动的产品！', TRUE, FALSE, FALSE),
-('康师傅冰红茶', 4, 48.00, 60.00, 200, 'Man! What can I say? Manba out!', TRUE, FALSE, FALSE),
-('华为Mate 60', 1, 6999.00, 7999.00, 40, '遥遥领先！', TRUE, TRUE, TRUE),
-('Mvegetable的电脑', 1, 3999.00, 4599.00, 25, 'Rycarl从水深火热中抢救而来，为什么水深火热你别管！', TRUE, FALSE, TRUE);
+INSERT INTO products (name, category_id, price, original_price, stock_quantity, description, main_image, is_active, is_new, is_hot) VALUES
+('Rycarl的非iphone手机', 1, 8999.00, 9999.00, 50, '学长严选，自用99新！', 'iphone14pro.jpg', TRUE, TRUE, TRUE),
+('三星Note 7', 2, 2999.00, 3499.00, 30, '民用炸弹！', 'xiaomi13u.jpg', TRUE, FALSE, TRUE),
+('耐克绝不用新疆棉', 3, 599.00, 799.00, 100, '绝不用强制劳动的产品！', 'nike270.jpg', TRUE, FALSE, FALSE),
+('康师傅冰红茶', 4, 48.00, 60.00, 200, 'Man! What can I say? Manba out!', 'starbucks-beans.jpg', TRUE, FALSE, FALSE),
+('华为Mate 60', 1, 6999.00, 7999.00, 40, '遥遥领先！', 'xiaomi13u.jpg', TRUE, TRUE, TRUE),
+('Mvegetable的电脑', 1, 3999.00, 4599.00, 25, 'Rycarl从水深火热中抢救而来，为什么水深火热你别管！', 'matebook14.jpg', TRUE, FALSE, TRUE);
 
 -- 插入测试用户（密码：password123，已使用 bcrypt 哈希存储）
 INSERT INTO users (username, password, email, balance) VALUES
