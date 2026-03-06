@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     district VARCHAR(50),
     detailed_address TEXT,
     zipcode VARCHAR(10),
-    balance DECIMAL(10,2) DEFAULT 10000.00, -- 新用户默认有100,000元
+    balance DECIMAL(10,2) DEFAULT 10000.00, -- 新用户默认有10,000元
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -139,8 +139,7 @@ INSERT INTO products (name, category_id, price, original_price, stock_quantity, 
 ('耐克绝不用新疆棉', 3, 599.00, 799.00, 100, '绝不用强制劳动的产品！', TRUE, FALSE, FALSE),
 ('康师傅冰红茶', 4, 48.00, 60.00, 200, 'Man! What can I say? Manba out!', TRUE, FALSE, FALSE),
 ('华为Mate 60', 1, 6999.00, 7999.00, 40, '遥遥领先！', TRUE, TRUE, TRUE),
-('Mvegetable的电脑', 1, 3999.00, 4599.00, 25, 'Rycarl从水深火热中抢救而来，为什么水深火热你别管！', TRUE, FALSE, TRUE),
-
+('Mvegetable的电脑', 1, 3999.00, 4599.00, 25, 'Rycarl从水深火热中抢救而来，为什么水深火热你别管！', TRUE, FALSE, TRUE);
 
 -- 插入测试用户（密码：password123，已使用 bcrypt 哈希存储）
 INSERT INTO users (username, password, email, balance) VALUES

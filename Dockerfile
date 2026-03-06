@@ -2,7 +2,7 @@
 FROM php:8.1-apache
 
 # 安装 PHP 扩展和系统依赖
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -15,7 +15,9 @@ RUN apt-get update && apt-get install -y \
     vim \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql mysqli zip opcache \
-    && docker-php-ext-enable mysqli pdo_mysql
+    && docker-php-ext-enable mysqli pdo_mysql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # 启用 Apache 的 rewrite 模块
 RUN a2enmod rewrite
@@ -33,12 +35,11 @@ COPY src/ /var/www/html/
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 # 设置文件权限
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 777 /var/www/html/uploads \
-    && mkdir -p /var/www/html/uploads/avatars \
+RUN mkdir -p /var/www/html/uploads/avatars \
     && mkdir -p /var/www/html/uploads/products \
-    && chown -R www-data:www-data /var/www/html/uploads
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 755 /var/www/html/uploads
 
 # 修改Apache配置以允许访问
 RUN echo "<Directory /var/www/html>" >> /etc/apache2/apache2.conf \
