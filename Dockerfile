@@ -5,7 +5,7 @@ FROM php:8.1-apache
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpng-dev \
     libjpeg-dev \
-    libfreetype6-dev \
+    libfreetype-dev \
     libzip-dev \
     libssl-dev \
     zip \
@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     vim \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql mysqli zip opcache \
-    && docker-php-ext-enable mysqli pdo_mysql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
