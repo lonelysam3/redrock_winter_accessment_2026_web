@@ -158,8 +158,4 @@ CREATE INDEX idx_reviews_user ON product_reviews(user_id);
 -- Docker 的 MYSQL_USER 创建时默认无 DDL 权限，这里明确授予所需的 DML 权限
 GRANT SELECT, INSERT, UPDATE, DELETE ON shopping_db.* TO 'shopping_user'@'%';
 
--- 专用健康检查用户：仅用于 Docker 健康检查，无任何数据访问权限。
--- 其凭据无需保密，因此可以在 docker-compose.yml 的 healthcheck 命令中硬编码，
--- 避免将 MYSQL_ROOT_PASSWORD 暴露在进程列表中。
-CREATE USER IF NOT EXISTS 'healthcheck'@'localhost' IDENTIFIED BY 'healthcheck';
 FLUSH PRIVILEGES;

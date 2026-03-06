@@ -16,8 +16,7 @@ services:
       - DB_USER=${DB_USER}          # 必须在 .env 中设置，无默认值
       - DB_PASSWORD=${DB_PASSWORD}  # 必须在 .env 中设置，无默认值
     depends_on:
-      db:
-        condition: service_healthy  # 等待数据库健康检查通过后再启动
+      - db
     networks:
       - shopping-network
 
@@ -40,14 +39,6 @@ services:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
       --max_allowed_packet=64M
-    healthcheck:
-      # 使用专用健康检查用户（无数据权限），凭据无需保密，可直接写在命令中，
-      # 避免将 MYSQL_ROOT_PASSWORD 暴露在进程列表中。
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "healthcheck", "-phealthcheck", "--silent"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
     networks:
       - shopping-network
 
@@ -61,8 +52,7 @@ services:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
       - shopping-network
 
