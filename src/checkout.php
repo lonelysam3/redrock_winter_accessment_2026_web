@@ -198,7 +198,20 @@ $pageStyles = '
 </style>
 ';
 ?>
-<?php require_once 'header.php'; ?>
+<?php $pageScripts = '
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const messages = document.querySelectorAll(".message");
+        messages.forEach(message => {
+            setTimeout(() => {
+                message.style.opacity = "0";
+                setTimeout(() => { message.remove(); }, 300);
+            }, 5000);
+        });
+    });
+</script>
+';
+require_once 'header.php'; ?>
 
         <div class="checkout-container">
             <div class="checkout-header">
@@ -370,20 +383,7 @@ $pageStyles = '
                 </div>
             </div>
         </div>
-
-<?php
-$pageScripts = '
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const messages = document.querySelectorAll(".message");
-        messages.forEach(message => {
-            setTimeout(() => {
-                message.style.opacity = "0";
-                setTimeout(() => { message.remove(); }, 300);
-            }, 5000);
-        });
-    });
-</script>
-';
-require_once 'footer.php';
-?>
+    </div><!-- close .container -->
+</main>
+</body>
+</html>

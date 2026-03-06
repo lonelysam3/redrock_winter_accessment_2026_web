@@ -179,7 +179,41 @@ $pageStyles = '
 </style>
 ';
 ?>
-<?php require_once 'header.php'; ?>
+<?php $pageScripts = '
+<script>
+    // 表单验证
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.querySelector(".register-form");
+        const password = document.getElementById("password");
+        const confirmPassword = document.getElementById("confirm_password");
+
+        form.addEventListener("submit", function(e) {
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert("两次输入的密码不一致，请重新输入！");
+                confirmPassword.focus();
+                return false;
+            }
+            if (password.value.length < 6) {
+                e.preventDefault();
+                alert("密码长度至少为6位！");
+                password.focus();
+                return false;
+            }
+            return true;
+        });
+
+        confirmPassword.addEventListener("input", function() {
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.style.borderColor = "red";
+            } else {
+                confirmPassword.style.borderColor = "";
+            }
+        });
+    });
+</script>
+';
+require_once 'header.php'; ?>
 
 <!-- 注册内容 -->
 <div class="register-container">
@@ -249,41 +283,7 @@ $pageStyles = '
         </div>
     </div>
 </div>
-
-<?php
-$pageScripts = '
-<script>
-    // 表单验证
-    document.addEventListener("DOMContentLoaded", function() {
-        const form = document.querySelector(".register-form");
-        const password = document.getElementById("password");
-        const confirmPassword = document.getElementById("confirm_password");
-
-        form.addEventListener("submit", function(e) {
-            if (password.value !== confirmPassword.value) {
-                e.preventDefault();
-                alert("两次输入的密码不一致，请重新输入！");
-                confirmPassword.focus();
-                return false;
-            }
-            if (password.value.length < 6) {
-                e.preventDefault();
-                alert("密码长度至少为6位！");
-                password.focus();
-                return false;
-            }
-            return true;
-        });
-
-        confirmPassword.addEventListener("input", function() {
-            if (password.value !== confirmPassword.value) {
-                confirmPassword.style.borderColor = "red";
-            } else {
-                confirmPassword.style.borderColor = "";
-            }
-        });
-    });
-</script>
-';
-require_once 'footer.php';
-?>
+    </div><!-- close .container -->
+</main>
+</body>
+</html>

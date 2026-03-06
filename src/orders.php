@@ -194,4 +194,7 @@ $pageStyles = '
             <?php endif; ?>
         </div>
 
-<?php require_once 'footer.php'; ?>
+    </div><!-- close .container -->
+</main>
+</body>
+</html>

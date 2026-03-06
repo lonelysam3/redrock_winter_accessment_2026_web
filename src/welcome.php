@@ -219,7 +219,42 @@ $pageStyles = '
 </style>
 ';
 ?>
-<?php require_once 'header.php'; ?>
+<?php $pageScripts = '
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const messages = document.querySelectorAll(".message");
+        messages.forEach(message => {
+            setTimeout(() => {
+                message.style.opacity = "0";
+                setTimeout(() => { message.remove(); }, 300);
+            }, 5000);
+        });
+        
+        const forms = document.querySelectorAll("form");
+        forms.forEach(form => {
+            form.addEventListener("submit", function(e) {
+                const requiredFields = form.querySelectorAll("[required]");
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.style.borderColor = "red";
+                    } else {
+                        field.style.borderColor = "";
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert("请填写所有必填字段");
+                }
+            });
+        });
+    });
+</script>
+';
+require_once 'header.php'; ?>
 
         <div class="dashboard">
             <div class="dashboard-header">
@@ -463,42 +498,7 @@ $pageStyles = '
                 <?php endif; ?>
             </div>
         </div>
-
-<?php
-$pageScripts = '
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const messages = document.querySelectorAll(".message");
-        messages.forEach(message => {
-            setTimeout(() => {
-                message.style.opacity = "0";
-                setTimeout(() => { message.remove(); }, 300);
-            }, 5000);
-        });
-        
-        const forms = document.querySelectorAll("form");
-        forms.forEach(form => {
-            form.addEventListener("submit", function(e) {
-                const requiredFields = form.querySelectorAll("[required]");
-                let isValid = true;
-                
-                requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
-                        isValid = false;
-                        field.style.borderColor = "red";
-                    } else {
-                        field.style.borderColor = "";
-                    }
-                });
-                
-                if (!isValid) {
-                    e.preventDefault();
-                    alert("请填写所有必填字段");
-                }
-            });
-        });
-    });
-</script>
-';
-require_once 'footer.php';
-?>
+    </div><!-- close .container -->
+</main>
+</body>
+</html>

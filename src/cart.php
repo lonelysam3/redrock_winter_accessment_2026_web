@@ -196,7 +196,44 @@ $pageStyles = '
 </style>
 ';
 ?>
-<?php require_once 'header.php'; ?>
+<?php $pageScripts = '
+<script>
+    // 更新商品数量
+    function updateQuantity(itemId, delta) {
+        const form = document.querySelector(`.quantity-form input[name="item_id"][value="${itemId}"]`).closest("form");
+        const quantityInput = form.querySelector(".quantity-input");
+        let quantity = parseInt(quantityInput.value) || 1;
+        
+        const maxStock = parseInt(quantityInput.getAttribute("max")) || 999;
+        
+        quantity += delta;
+        if (quantity < 1) quantity = 1;
+        if (quantity > maxStock) quantity = maxStock;
+        
+        quantityInput.value = quantity;
+        form.submit();
+    }
+    
+    function updateQuantityInput(itemId, value) {
+        const form = document.querySelector(`.quantity-form input[name="item_id"][value="${itemId}"]`).closest("form");
+        const quantityInput = form.querySelector(".quantity-input");
+        
+        const maxStock = parseInt(quantityInput.getAttribute("max")) || 999;
+        
+        let quantity = parseInt(value) || 1;
+        if (quantity < 1) quantity = 1;
+        if (quantity > maxStock) quantity = maxStock;
+        
+        quantityInput.value = quantity;
+        form.submit();
+    }
+    
+    function confirmClearCart() {
+        return confirm("确定要清空购物车吗？此操作不可撤销。");
+    }
+</script>
+';
+require_once 'header.php'; ?>
 
         <div class="cart-container">
             <div class="cart-header">
@@ -374,44 +411,7 @@ $pageStyles = '
                 <?php endif; ?>
             <?php endif; ?>
         </div>
-
-<?php
-$pageScripts = '
-<script>
-    // 更新商品数量
-    function updateQuantity(itemId, delta) {
-        const form = document.querySelector(`.quantity-form input[name="item_id"][value="${itemId}"]`).closest("form");
-        const quantityInput = form.querySelector(".quantity-input");
-        let quantity = parseInt(quantityInput.value) || 1;
-        
-        const maxStock = parseInt(quantityInput.getAttribute("max")) || 999;
-        
-        quantity += delta;
-        if (quantity < 1) quantity = 1;
-        if (quantity > maxStock) quantity = maxStock;
-        
-        quantityInput.value = quantity;
-        form.submit();
-    }
-    
-    function updateQuantityInput(itemId, value) {
-        const form = document.querySelector(`.quantity-form input[name="item_id"][value="${itemId}"]`).closest("form");
-        const quantityInput = form.querySelector(".quantity-input");
-        
-        const maxStock = parseInt(quantityInput.getAttribute("max")) || 999;
-        
-        let quantity = parseInt(value) || 1;
-        if (quantity < 1) quantity = 1;
-        if (quantity > maxStock) quantity = maxStock;
-        
-        quantityInput.value = quantity;
-        form.submit();
-    }
-    
-    function confirmClearCart() {
-        return confirm("确定要清空购物车吗？此操作不可撤销。");
-    }
-</script>
-';
-require_once 'footer.php';
-?>
+    </div><!-- close .container -->
+</main>
+</body>
+</html>

@@ -149,6 +149,67 @@ $pageStyles = '
     .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 </style>
 ';
+$pageScripts = '
+<script>
+    function changeMainImage(src) {
+        document.getElementById("mainImage").src = src;
+        document.querySelectorAll(".thumbnail").forEach(thumb => {
+            thumb.classList.remove("active");
+        });
+        event.target.closest(".thumbnail").classList.add("active");
+    }
+    
+    function switchTab(tabName) {
+        document.querySelectorAll(".tab-header").forEach(header => {
+            header.classList.remove("active");
+        });
+        event.target.classList.add("active");
+        
+        document.querySelectorAll(".tab-content").forEach(content => {
+            content.classList.remove("active");
+        });
+        document.getElementById(tabName + "-tab").classList.add("active");
+    }
+    
+    function changeQuantity(delta) {
+        const input = document.querySelector(".quantity-input");
+        let quantity = parseInt(input.value) || 1;
+        quantity += delta;
+        
+        const maxQuantity = ' . (int)$product['stock_quantity'] . ';
+        if (quantity < 1) quantity = 1;
+        if (quantity > maxQuantity) quantity = maxQuantity;
+        
+        input.value = quantity;
+    }
+    
+    function buyNow() {
+        const quantity = document.querySelector(".quantity-input").value;
+        const productId = ' . (int)$product['id'] . ';
+        window.location.href = "buy_now.php?product_id=" + productId + "&quantity=" + quantity;
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        const ratingInputs = document.querySelectorAll(".rating-input input");
+        ratingInputs.forEach(input => {
+            input.addEventListener("change", function() {
+                const stars = this.closest(".rating-input").querySelectorAll(".fa-star");
+                const rating = parseInt(this.value);
+                
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove("far");
+                        star.classList.add("fas");
+                    } else {
+                        star.classList.remove("fas");
+                        star.classList.add("far");
+                    }
+                });
+            });
+        });
+    });
+</script>
+';
 require_once 'header.php';
 ?>
         <!-- 消息提示 -->
@@ -429,68 +490,7 @@ require_once 'header.php';
             </div>
         </div>
         <?php endif; ?>
-
-<?php
-$pageScripts = '
-<script>
-    function changeMainImage(src) {
-        document.getElementById("mainImage").src = src;
-        document.querySelectorAll(".thumbnail").forEach(thumb => {
-            thumb.classList.remove("active");
-        });
-        event.target.closest(".thumbnail").classList.add("active");
-    }
-    
-    function switchTab(tabName) {
-        document.querySelectorAll(".tab-header").forEach(header => {
-            header.classList.remove("active");
-        });
-        event.target.classList.add("active");
-        
-        document.querySelectorAll(".tab-content").forEach(content => {
-            content.classList.remove("active");
-        });
-        document.getElementById(tabName + "-tab").classList.add("active");
-    }
-    
-    function changeQuantity(delta) {
-        const input = document.querySelector(".quantity-input");
-        let quantity = parseInt(input.value) || 1;
-        quantity += delta;
-        
-        const maxQuantity = ' . (int)$product['stock_quantity'] . ';
-        if (quantity < 1) quantity = 1;
-        if (quantity > maxQuantity) quantity = maxQuantity;
-        
-        input.value = quantity;
-    }
-    
-    function buyNow() {
-        const quantity = document.querySelector(".quantity-input").value;
-        const productId = ' . (int)$product['id'] . ';
-        window.location.href = "buy_now.php?product_id=" + productId + "&quantity=" + quantity;
-    }
-    
-    document.addEventListener("DOMContentLoaded", function() {
-        const ratingInputs = document.querySelectorAll(".rating-input input");
-        ratingInputs.forEach(input => {
-            input.addEventListener("change", function() {
-                const stars = this.closest(".rating-input").querySelectorAll(".fa-star");
-                const rating = parseInt(this.value);
-                
-                stars.forEach((star, index) => {
-                    if (index < rating) {
-                        star.classList.remove("far");
-                        star.classList.add("fas");
-                    } else {
-                        star.classList.remove("fas");
-                        star.classList.add("far");
-                    }
-                });
-            });
-        });
-    });
-</script>
-';
-require_once 'footer.php';
-?>
+    </div><!-- close .container -->
+</main>
+</body>
+</html>
