@@ -171,460 +171,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($pageTitle); ?> - 购物网站</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #ff6b6b;
-            --secondary-color: #4ecdc4;
-            --dark-color: #2d3436;
-            --light-color: #f9f9f9;
-            --gray-color: #636e72;
-            --border-color: #e0e0e0;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            background-color: #f5f5f5;
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        /* 头部样式 */
-        .header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .header-main {
-            padding: 15px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        .logo i {
-            margin-right: 5px;
-        }
-        
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            color: var(--dark-color);
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        
-        .nav-links a:hover {
-            background: #f5f5f5;
-        }
-        
-        .nav-links a.active {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .cart-count-badge {
-            position: relative;
-        }
-        
-        .cart-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--primary-color);
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-        
-        /* 个人中心主要内容 */
-        .dashboard {
-            padding: 40px 0;
-        }
-        
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .dashboard-title {
-            font-size: 28px;
-            color: var(--dark-color);
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-            text-decoration: none;
-            text-align: center;
-        }
-        
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #ff5252;
-        }
-        
-        .btn-outline {
-            background: white;
-            color: var(--dark-color);
-            border: 1px solid var(--border-color);
-        }
-        
-        .btn-outline:hover {
-            background: #f5f5f5;
-        }
-        
-        /* 消息提示 */
-        .message {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        /* 用户信息卡片 */
-        .user-card {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 30px;
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-        
-        @media (max-width: 768px) {
-            .user-card {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .user-avatar-section {
-            text-align: center;
-        }
-        
-        .user-avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin: 0 auto 20px;
-            position: relative;
-        }
-        
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .change-avatar-btn {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: var(--primary-color);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 3px solid white;
-        }
-        
-        .user-name {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .user-email {
-            color: var(--gray-color);
-            margin-bottom: 10px;
-        }
-        
-        /* 表单样式 */
-        .form-section {
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-        
-        .section-title {
-            font-size: 20px;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark-color);
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        
-        /* 订单列表 */
-        .orders-section {
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .order-item {
-            display: grid;
-            grid-template-columns: 100px 2fr 1fr auto;
-            gap: 20px;
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            align-items: center;
-        }
-        
-        .order-item:last-child {
-            border-bottom: none;
-        }
-        
-        .order-image {
-            width: 100px;
-            height: 100px;
-            overflow: hidden;
-            border-radius: 4px;
-        }
-        
-        .order-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .order-info h4 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        
-        .order-info p {
-            color: var(--gray-color);
-            margin-bottom: 5px;
-        }
-        
-        .order-amount {
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        .order-status {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-processing {
-            background: #cce5ff;
-            color: #004085;
-        }
-        
-        .status-completed {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        /* 空状态 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        
-        .empty-state i {
-            font-size: 60px;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-        
-        .empty-state h3 {
-            font-size: 20px;
-            color: var(--gray-color);
-            margin-bottom: 10px;
-        }
-        
-        /* 页脚 */
-        .footer {
-            background: var(--dark-color);
-            color: white;
-            padding: 40px 0;
-            margin-top: 60px;
-        }
-        
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            margin-top: 30px;
-            color: #bbb;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <!-- 头部 -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="products.php" class="logo">
-                    <i class="fas fa-shopping-bag"></i> 购物网站
-                </a>
-                
-                <div class="nav-links">
-                    <a href="products.php">
-                        <i class="fas fa-store"></i> 商城首页
-                    </a>
-                    <a href="cart.php" class="cart-count-badge">
-                        <i class="fas fa-shopping-cart"></i> 购物车
-                        <?php if ($cartCount > 0): ?>
-                            <span class="cart-count"><?php echo $cartCount; ?></span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="welcome.php" class="active">
-                        <i class="fas fa-user"></i> 个人中心
-                    </a>
-                    <a href="logout.php" onclick="return confirm('确定要退出登录吗？')">
-                        <i class="fas fa-sign-out-alt"></i> 退出登录
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+$pageStyles = '
+<style>
+    .cart-count-badge { position: relative; }
+    .cart-count { position: absolute; top: -8px; right: -8px; background: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .dashboard { padding: 40px 0; }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .dashboard-title { font-size: 28px; color: var(--dark-color); }
+    .btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: all 0.3s; text-decoration: none; text-align: center; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { background: #ff5252; }
+    .btn-outline { background: white; color: var(--dark-color); border: 1px solid var(--border-color); }
+    .btn-outline:hover { background: #f5f5f5; }
+    .user-card { display: grid; grid-template-columns: 200px 1fr; gap: 30px; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    @media (max-width: 768px) { .user-card { grid-template-columns: 1fr; } }
+    .user-avatar-section { text-align: center; }
+    .user-avatar { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; margin: 0 auto 20px; position: relative; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .change-avatar-btn { position: absolute; bottom: 0; right: 0; background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; }
+    .user-name { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+    .user-email { color: var(--gray-color); margin-bottom: 10px; }
+    .form-section { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .section-title { font-size: 20px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--dark-color); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 16px; transition: border-color 0.3s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-color); outline: none; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .orders-section { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .order-item { display: grid; grid-template-columns: 100px 2fr 1fr auto; gap: 20px; padding: 20px; border-bottom: 1px solid var(--border-color); align-items: center; }
+    .order-item:last-child { border-bottom: none; }
+    .order-image { width: 100px; height: 100px; overflow: hidden; border-radius: 4px; }
+    .order-image img { width: 100%; height: 100%; object-fit: cover; }
+    .order-info h4 { font-size: 18px; margin-bottom: 10px; }
+    .order-info p { color: var(--gray-color); margin-bottom: 5px; }
+    .order-amount { font-weight: bold; color: var(--primary-color); }
+    .order-status { padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-processing { background: #cce5ff; color: #004085; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state i { font-size: 60px; color: #ddd; margin-bottom: 20px; }
+    .empty-state h3 { font-size: 20px; color: var(--gray-color); margin-bottom: 10px; }
+</style>
+';
+?>
+<?php require_once 'header.php'; ?>
 
-    <!-- 消息提示 -->
-    <?php if ($message): ?>
-        <div class="container">
-            <div class="message <?php echo $message_type; ?>">
-                <?php echo htmlspecialchars($message); ?>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <!-- 个人中心内容 -->
-    <main class="container">
         <div class="dashboard">
             <div class="dashboard-header">
                 <h1 class="dashboard-title">
@@ -645,20 +241,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="user-avatar-section">
                     <div class="user-avatar">
                         <?php
-                        // 确定头像路径
                         $avatar_path = '';
                         
                         if (!empty($user['avatar'])) {
-                            // 如果用户有头像，检查文件是否存在
                             $avatar_path = 'uploads/avatars/' . $user['avatar'];
                             if (!file_exists($avatar_path)) {
                                 $avatar_path = 'uploads/avatars/default_avatar.png';
                                 if (!file_exists($avatar_path)) {
-                                    $avatar_path = ''; // 如果默认头像也不存在，显示首字母
+                                    $avatar_path = '';
                                 }
                             }
                         } else {
-                            // 用户没有头像，使用默认头像
                             $avatar_path = 'uploads/avatars/default_avatar.png';
                             if (!file_exists($avatar_path)) {
                                 $avatar_path = '';
@@ -868,55 +461,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endif; ?>
             </div>
         </div>
-    </main>
 
-    <!-- 页脚 -->
-    <footer class="footer">
-        <div class="container">
-            <div class="copyright">
-                &copy; 2023 购物网站 版权所有
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // 页面加载后
-        document.addEventListener('DOMContentLoaded', function() {
-            // 自动隐藏消息提示
-            const messages = document.querySelectorAll('.message');
-            messages.forEach(message => {
-                setTimeout(() => {
-                    message.style.opacity = '0';
-                    setTimeout(() => {
-                        message.remove();
-                    }, 300);
-                }, 5000);
-            });
-            
-            // 表单验证
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    // 简单的必填字段验证
-                    const requiredFields = form.querySelectorAll('[required]');
-                    let isValid = true;
-                    
-                    requiredFields.forEach(field => {
-                        if (!field.value.trim()) {
-                            isValid = false;
-                            field.style.borderColor = 'red';
-                        } else {
-                            field.style.borderColor = '';
-                        }
-                    });
-                    
-                    if (!isValid) {
-                        e.preventDefault();
-                        alert('请填写所有必填字段');
+<?php
+$pageScripts = '
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const messages = document.querySelectorAll(".message");
+        messages.forEach(message => {
+            setTimeout(() => {
+                message.style.opacity = "0";
+                setTimeout(() => { message.remove(); }, 300);
+            }, 5000);
+        });
+        
+        const forms = document.querySelectorAll("form");
+        forms.forEach(form => {
+            form.addEventListener("submit", function(e) {
+                const requiredFields = form.querySelectorAll("[required]");
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.style.borderColor = "red";
+                    } else {
+                        field.style.borderColor = "";
                     }
                 });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert("请填写所有必填字段");
+                }
             });
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+';
+require_once 'footer.php';
+?>

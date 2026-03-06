@@ -179,256 +179,111 @@ $pageStyles = '
 </style>
 ';
 ?>
+<?php require_once 'header.php'; ?>
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($pageTitle); ?> - 购物网站</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* 基础样式 */
-        :root {
-            --primary-color: #ff6b6b;
-            --secondary-color: #4ecdc4;
-            --dark-color: #2d3436;
-            --light-color: #f9f9f9;
-            --gray-color: #636e72;
-            --border-color: #e0e0e0;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            background-color: #f5f5f5;
-            color: var(--dark-color);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .container {
-            max-width: 1200px;
-            min-width: 1000px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        .header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .header-main {
-            padding: 15px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        .logo i {
-            margin-right: 5px;
-        }
-        
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            color: var(--dark-color);
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        
-        .nav-links a:hover {
-            background: #f5f5f5;
-        }
-        
-        .nav-links a.active {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .message {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        <?php echo $pageStyles; ?>
-    </style>
-</head>
-<body>
-    <!-- 头部 -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="products.php" class="logo">
-                    <i class="fas fa-shopping-bag"></i> 购物网站
-                </a>
-                
-                <div class="nav-links">
-                    <a href="products.php">
-                        <i class="fas fa-store"></i> 商城首页
-                    </a>
-                    <a href="login.php" class="active">
-                        <i class="fas fa-sign-in-alt"></i> 登录/注册
-                    </a>
-                </div>
+<!-- 注册内容 -->
+<div class="register-container">
+    <div class="register-card">
+        <!-- 注册头部 -->
+        <div class="register-header">
+            <div class="register-icon">
+                <i class="fas fa-user-plus"></i>
             </div>
+            <h1 class="register-title">用户注册</h1>
+            <p class="register-subtitle">创建新账户，开始购物之旅</p>
         </div>
-    </header>
 
-    <!-- 消息提示 -->
-    <?php if ($error || $success): ?>
-        <div class="container">
-            <div class="message <?php echo $success ? 'success' : 'error'; ?>">
-                <?php echo htmlspecialchars($error ?: $success); ?>
+        <!-- 错误/成功信息 -->
+        <?php if ($error): ?>
+            <div class="alert alert-error">
+                <span><?php echo htmlspecialchars($error); ?></span>
             </div>
-        </div>
-    <?php endif; ?>
-
-    <!-- 注册内容 -->
-    <main class="container">
-        <div class="register-container">
-            <div class="register-card">
-                <!-- 注册头部 -->
-                <div class="register-header">
-                    <div class="register-icon">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <h1 class="register-title">用户注册</h1>
-                    <p class="register-subtitle">创建新账户，开始购物之旅</p>
-                </div>
-                
-                <!-- 注册表单 -->
-                <form class="register-form" method="POST" action="">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
-                    <div class="form-group">
-                        <label for="username">用户名 *</label>
-                        <input type="text" id="username" name="username" 
-                               placeholder="请输入用户名（3-20位字符）" 
-                               value="<?php echo htmlspecialchars($username ?? ''); ?>" 
-                               required minlength="3" maxlength="20">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">邮箱地址</label>
-                        <input type="email" id="email" name="email" 
-                               placeholder="请输入邮箱（可选）" 
-                               value="<?php echo htmlspecialchars($email ?? ''); ?>">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">密码 *</label>
-                        <input type="password" id="password" name="password" 
-                               placeholder="请输入密码（至少6位）" 
-                               required minlength="6">
-                        <div class="password-requirements">密码至少需要6位字符</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confirm_password">确认密码 *</label>
-                        <input type="password" id="confirm_password" name="confirm_password" 
-                               placeholder="请再次输入密码" 
-                               required minlength="6">
-                    </div>
-                    
-                    <button type="submit" class="register-button">
-                        注册账号
-                    </button>
-                </form>
-                
-                <!-- 登录链接 -->
-                <div class="login-link">
-                    已有账号？ <a href="login.php">立即登录</a>
-                </div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="alert alert-success">
+                <span><?php echo htmlspecialchars($success); ?></span>
             </div>
-        </div>
-    </main>
+        <?php endif; ?>
 
-    <script>
-        // 表单验证
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('.register-form');
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirm_password');
-            
-            form.addEventListener('submit', function(e) {
-                // 检查密码是否一致
-                if (password.value !== confirmPassword.value) {
-                    e.preventDefault();
-                    alert('两次输入的密码不一致，请重新输入！');
-                    confirmPassword.focus();
-                    return false;
-                }
-                
-                // 检查密码强度
-                if (password.value.length < 6) {
-                    e.preventDefault();
-                    alert('密码长度至少为6位！');
-                    password.focus();
-                    return false;
-                }
-                
-                return true;
-            });
-            
-            // 实时检查密码一致性
-            confirmPassword.addEventListener('input', function() {
-                if (password.value !== confirmPassword.value) {
-                    confirmPassword.style.borderColor = 'red';
-                } else {
-                    confirmPassword.style.borderColor = '';
-                }
-            });
-            
-            // 自动隐藏消息提示
-            setTimeout(() => {
-                const message = document.querySelector('.message');
-                if (message) {
-                    message.style.opacity = '0';
-                    setTimeout(() => message.remove(), 300);
-                }
-            }, 5000);
+        <!-- 注册表单 -->
+        <form class="register-form" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
+            <div class="form-group">
+                <label for="username">用户名 *</label>
+                <input type="text" id="username" name="username"
+                       placeholder="请输入用户名（3-20位字符）"
+                       value="<?php echo htmlspecialchars($username ?? ''); ?>"
+                       required minlength="3" maxlength="20">
+            </div>
+
+            <div class="form-group">
+                <label for="email">邮箱地址</label>
+                <input type="email" id="email" name="email"
+                       placeholder="请输入邮箱（可选）"
+                       value="<?php echo htmlspecialchars($email ?? ''); ?>">
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码 *</label>
+                <input type="password" id="password" name="password"
+                       placeholder="请输入密码（至少6位）"
+                       required minlength="6">
+                <div class="password-requirements">密码至少需要6位字符</div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">确认密码 *</label>
+                <input type="password" id="confirm_password" name="confirm_password"
+                       placeholder="请再次输入密码"
+                       required minlength="6">
+            </div>
+
+            <button type="submit" class="register-button">
+                注册账号
+            </button>
+        </form>
+
+        <!-- 登录链接 -->
+        <div class="login-link">
+            已有账号？ <a href="login.php">立即登录</a>
+        </div>
+    </div>
+</div>
+
+<?php
+$pageScripts = '
+<script>
+    // 表单验证
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.querySelector(".register-form");
+        const password = document.getElementById("password");
+        const confirmPassword = document.getElementById("confirm_password");
+
+        form.addEventListener("submit", function(e) {
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert("两次输入的密码不一致，请重新输入！");
+                confirmPassword.focus();
+                return false;
+            }
+            if (password.value.length < 6) {
+                e.preventDefault();
+                alert("密码长度至少为6位！");
+                password.focus();
+                return false;
+            }
+            return true;
         });
-    </script>
-</body>
-</html>
+
+        confirmPassword.addEventListener("input", function() {
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.style.borderColor = "red";
+            } else {
+                confirmPassword.style.borderColor = "";
+            }
+        });
+    });
+</script>
+';
+require_once 'footer.php';
+?>
