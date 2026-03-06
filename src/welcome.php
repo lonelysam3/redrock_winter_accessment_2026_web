@@ -241,6 +241,8 @@ $pageStyles = '
                 <div class="user-avatar-section">
                     <div class="user-avatar">
                         <?php
+                        // Resolve avatar path: prefer user's uploaded avatar, fall back to
+                        // default_avatar.png, and use empty string (initial placeholder) if neither exists.
                         $avatar_path = '';
                         
                         if (!empty($user['avatar'])) {

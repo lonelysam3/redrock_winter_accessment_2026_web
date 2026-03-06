@@ -192,6 +192,7 @@ $pageStyles = '
     .product-name-mini { font-size: 14px; margin-bottom: 10px; height: 40px; overflow: hidden; }
     .product-price-mini { font-size: 16px; font-weight: bold; color: var(--primary-color); }
     .item-subtotal { font-weight: bold; }
+    .item-image-placeholder { width: 100px; height: 100px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 24px; color: #666; }
 </style>
 ';
 ?>
@@ -239,9 +240,9 @@ $pageStyles = '
                                         alt="' . htmlspecialchars($item['name']) . '">';
                                 } else {
                                     $initial = mb_substr($item['name'], 0, 1, 'UTF-8');
-                                    echo '<div style="width:100px;height:100px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;border-radius:4px;">
-                                            <span style="font-size:24px;color:#666;">' . htmlspecialchars($initial) . '</span>
-                                        </div>';
+                                    echo '<div class="item-image-placeholder">'
+                                        . htmlspecialchars($initial)
+                                        . '</div>';
                                 }
                                 ?>
                             </div>
