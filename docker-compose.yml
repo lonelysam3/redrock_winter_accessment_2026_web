@@ -43,8 +43,9 @@ services:
       --collation-server=utf8mb4_unicode_ci
       --max_allowed_packet=64M
     healthcheck:
-      # mysqladmin ping 无需凭据即可检测服务是否存活（避免密码暴露在进程列表中）
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      # 使用专用健康检查用户（无数据权限），凭据无需保密，可直接写在命令中，
+      # 避免将 MYSQL_ROOT_PASSWORD 暴露在进程列表中。
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "healthcheck", "-phealthcheck", "--silent"]
       interval: 10s
       timeout: 5s
       retries: 5
