@@ -458,7 +458,7 @@ $pageScripts = '
         let quantity = parseInt(input.value) || 1;
         quantity += delta;
         
-        const maxQuantity = <?php echo $product["stock_quantity"]; ?>;
+        const maxQuantity = ' . (int)$product['stock_quantity'] . ';
         if (quantity < 1) quantity = 1;
         if (quantity > maxQuantity) quantity = maxQuantity;
         
@@ -467,7 +467,7 @@ $pageScripts = '
     
     function buyNow() {
         const quantity = document.querySelector(".quantity-input").value;
-        const productId = <?php echo $product["id"]; ?>;
+        const productId = ' . (int)$product['id'] . ';
         window.location.href = "buy_now.php?product_id=" + productId + "&quantity=" + quantity;
     }
     
