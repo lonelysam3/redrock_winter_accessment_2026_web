@@ -1,0 +1,12 @@
+# Deny execution of PHP (and other script) files inside the uploads directory.
+# This prevents polyglot/webshell uploads from being executed even if they
+# somehow pass MIME-type validation.
+<FilesMatch "\.ph(p[2-9]?|tm[l]?|ps)$">
+    Require all denied
+</FilesMatch>
+
+# Disable CGI execution
+Options -ExecCGI
+
+# Force all files to be served as plain downloads (extra defense layer)
+AddType application/octet-stream .php .php3 .php4 .php5 .php6 .php7 .phtml .phps .pht
