@@ -153,3 +153,8 @@ CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_reviews_product ON product_reviews(product_id);
 CREATE INDEX idx_reviews_user ON product_reviews(user_id);
+
+-- 最小权限原则：shopping_user 仅授予 DML 权限，不授予 DDL 或管理员权限
+-- Docker 的 MYSQL_USER 创建时默认无 DDL 权限，这里明确授予所需的 DML 权限
+GRANT SELECT, INSERT, UPDATE, DELETE ON shopping_db.* TO 'shopping_user'@'%';
+FLUSH PRIVILEGES;

@@ -15,10 +15,11 @@ services:
     environment:
       - DB_HOST=${DB_HOST:-db}
       - DB_NAME=${DB_NAME:-shopping_db}
-      - DB_USER=${DB_USER:-shopping_user}
-      - DB_PASSWORD=${DB_PASSWORD:-shopping_password}
+      - DB_USER=${DB_USER}          # 必须在 .env 中设置，无默认值
+      - DB_PASSWORD=${DB_PASSWORD}  # 必须在 .env 中设置，无默认值
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # 等待数据库健康检查通过后再启动
     networks:
       - shopping-network
 
@@ -27,16 +28,27 @@ services:
     container_name: shopping-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # 必须在 .env 中设置，无默认值
       MYSQL_DATABASE: ${MYSQL_DATABASE:-shopping_db}
-      MYSQL_USER: ${MYSQL_USER:-shopping_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-shopping_password}
-    ports:
-      - "3306:3306"
+      MYSQL_USER: ${MYSQL_USER}                    # 必须在 .env 中设置，无默认值
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}            # 必须在 .env 中设置，无默认值
+    # 不暴露 3306 端口到宿主机，仅在内部 Docker 网络中可达
+    # 如需本地调试，可临时添加: ports: ["127.0.0.1:3306:3306"]
     volumes:
       - db_data:/var/lib/mysql
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=mysql_native_password
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    # 使用 MySQL 8.0 默认的 caching_sha2_password 认证插件（比 mysql_native_password 更安全）
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max_allowed_packet=64M
+    healthcheck:
+      # mysqladmin ping 无需凭据即可检测服务是否存活（避免密码暴露在进程列表中）
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - shopping-network
 
@@ -48,9 +60,10 @@ services:
       - "${PMA_PORT:-8081}:80"
     environment:
       PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - shopping-network
 
