@@ -678,3 +678,7 @@ require_once 'header.php';
         </div>
     </div>
 <?php endif; ?>
+    </div><!-- close .container -->
+</main>
+</body>
+</html>

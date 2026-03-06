@@ -52,332 +52,42 @@ $cartItems = [[
 
 $totalAmount = $product['price'] * $quantity;
 ?>
+<?php
+$pageTitle = '直接购买';
+$pageStyles = '
+<style>
+    .buy-now-container { padding: 40px 0; }
+    .page-title { font-size: 28px; margin-bottom: 30px; color: var(--dark-color); }
+    .product-summary { background: white; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .product-row { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--border-color); }
+    .product-row:last-child { border-bottom: none; }
+    .product-image { width: 80px; height: 80px; overflow: hidden; border-radius: 4px; margin-right: 15px; }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; }
+    .product-info { flex: 1; }
+    .product-name { font-weight: 500; margin-bottom: 5px; }
+    .product-price { color: var(--primary-color); font-weight: bold; }
+    .product-quantity { min-width: 100px; text-align: center; }
+    .product-subtotal { min-width: 100px; text-align: right; font-weight: bold; }
+    .shipping-section { background: white; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .section-title { font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+    .address-info { padding: 15px; background: #f9f9f9; border-radius: 4px; }
+    .address-line { margin-bottom: 5px; }
+    .no-address { text-align: center; padding: 30px; color: var(--gray-color); }
+    .order-summary { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--gray-color); }
+    .summary-row.total { font-size: 20px; font-weight: bold; color: var(--primary-color); padding-top: 15px; border-top: 1px solid var(--border-color); margin-top: 15px; }
+    .balance-info { background: #f9f9f9; border-radius: 8px; padding: 15px; margin: 20px 0; }
+    .balance-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .balance-amount { font-size: 18px; font-weight: bold; color: var(--primary-color); }
+    .balance-after { border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 10px; }
+    .payment-button { width: 100%; padding: 18px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .payment-button:hover:not(:disabled) { background: #ff5252; transform: translateY(-2px); }
+    .payment-button:disabled { background: #ccc; cursor: not-allowed; }
+</style>
+';
+require_once 'header.php';
+?>
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>直接购买 - 购物网站</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #ff6b6b;
-            --secondary-color: #4ecdc4;
-            --dark-color: #2d3436;
-            --light-color: #f9f9f9;
-            --gray-color: #636e72;
-            --border-color: #e0e0e0;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            background-color: #f5f5f5;
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        /* 头部样式 */
-        .header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .header-main {
-            padding: 15px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        .logo i {
-            margin-right: 5px;
-        }
-        
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            color: var(--dark-color);
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        
-        .nav-links a:hover {
-            background: #f5f5f5;
-        }
-        
-        .nav-links a.active {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        /* 直接购买页面 */
-        .buy-now-container {
-            padding: 40px 0;
-        }
-        
-        .page-title {
-            font-size: 28px;
-            margin-bottom: 30px;
-            color: var(--dark-color);
-        }
-        
-        /* 商品信息 */
-        .product-summary {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .product-row {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .product-row:last-child {
-            border-bottom: none;
-        }
-        
-        .product-image {
-            width: 80px;
-            height: 80px;
-            overflow: hidden;
-            border-radius: 4px;
-            margin-right: 15px;
-        }
-        
-        .product-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .product-info {
-            flex: 1;
-        }
-        
-        .product-name {
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        
-        .product-price {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-        
-        .product-quantity {
-            min-width: 100px;
-            text-align: center;
-        }
-        
-        .product-subtotal {
-            min-width: 100px;
-            text-align: right;
-            font-weight: bold;
-        }
-        
-        /* 收货地址 */
-        .shipping-section {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .address-info {
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 4px;
-        }
-        
-        .address-line {
-            margin-bottom: 5px;
-        }
-        
-        .no-address {
-            text-align: center;
-            padding: 30px;
-            color: var(--gray-color);
-        }
-        
-        /* 订单摘要 */
-        .order-summary {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            color: var(--gray-color);
-        }
-        
-        .summary-row.total {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--primary-color);
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-            margin-top: 15px;
-        }
-        
-        /* 余额信息 */
-        .balance-info {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        
-        .balance-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .balance-amount {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        .balance-after {
-            border-top: 1px dashed var(--border-color);
-            padding-top: 10px;
-            margin-top: 10px;
-        }
-        
-        /* 支付按钮 */
-        .payment-button {
-            width: 100%;
-            padding: 18px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .payment-button:hover:not(:disabled) {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-        
-        .payment-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        /* 消息提示 */
-        .message {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        /* 页脚 */
-        .footer {
-            background: var(--dark-color);
-            color: white;
-            padding: 40px 0;
-            margin-top: 60px;
-        }
-        
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            margin-top: 30px;
-            color: #bbb;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <!-- 头部 -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="products.php" class="logo">
-                    <i class="fas fa-shopping-bag"></i> 购物网站
-                </a>
-                
-                <div class="nav-links">
-                    <a href="products.php">
-                        <i class="fas fa-store"></i> 商城首页
-                    </a>
-                    <a href="welcome.php">
-                        <i class="fas fa-user"></i> 个人中心
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- 直接购买内容 -->
-    <main class="container">
         <div class="buy-now-container">
             <h1 class="page-title">
                 <i class="fas fa-bolt"></i> 直接购买
@@ -520,7 +230,8 @@ $totalAmount = $product['price'] * $quantity;
                 </form>
             </div>
         </div>
-    </main>
 
+    </div><!-- close .container -->
+</main>
 </body>
 </html>

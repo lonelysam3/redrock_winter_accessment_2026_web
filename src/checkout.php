@@ -152,445 +152,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$pageTitle = '订单结算';
+$pageStyles = '
+<style>
+    .cart-count-badge { position: relative; }
+    .cart-count { position: absolute; top: -8px; right: -8px; background: var(--primary-color); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .checkout-container { padding: 40px 0; }
+    .checkout-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .checkout-title { font-size: 28px; color: var(--dark-color); }
+    .checkout-steps { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .step { display: flex; align-items: center; gap: 10px; color: var(--gray-color); }
+    .step.active { color: var(--primary-color); }
+    .step-number { width: 30px; height: 30px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .step.active .step-number { background: var(--primary-color); color: white; }
+    .checkout-content { display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
+    @media (max-width: 992px) { .checkout-content { grid-template-columns: 1fr; } }
+    .shipping-section { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .section-title { font-size: 20px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .section-title a { font-size: 14px; color: var(--primary-color); text-decoration: none; }
+    .address-info { padding: 15px; background: #f9f9f9; border-radius: 4px; margin-bottom: 15px; }
+    .address-line { margin-bottom: 5px; }
+    .no-address { text-align: center; padding: 30px; color: var(--gray-color); }
+    .no-address i { font-size: 48px; margin-bottom: 15px; color: #ddd; }
+    .products-section { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .checkout-item { display: flex; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border-color); }
+    .checkout-item:last-child { border-bottom: none; }
+    .item-image { width: 80px; height: 80px; overflow: hidden; border-radius: 4px; margin-right: 15px; }
+    .item-image img { width: 100%; height: 100%; object-fit: cover; }
+    .item-details { flex: 1; }
+    .item-name { font-weight: 500; margin-bottom: 5px; }
+    .item-price { color: var(--primary-color); font-weight: bold; }
+    .item-quantity { color: var(--gray-color); }
+    .item-subtotal { font-weight: bold; min-width: 80px; text-align: right; }
+    .order-summary { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: fit-content; position: sticky; top: 100px; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--gray-color); }
+    .summary-row.total { font-size: 20px; font-weight: bold; color: var(--primary-color); padding-top: 15px; border-top: 1px solid var(--border-color); margin-top: 15px; }
+    .balance-info { background: #f9f9f9; border-radius: 8px; padding: 15px; margin: 20px 0; }
+    .balance-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .balance-amount { font-size: 18px; font-weight: bold; color: var(--primary-color); }
+    .balance-after { border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 10px; }
+    .payment-button { width: 100%; padding: 18px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .payment-button:hover:not(:disabled) { background: #ff5252; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,107,107,0.2); }
+    .payment-button:disabled { background: #ccc; cursor: not-allowed; }
+</style>
+';
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>订单结算 - 购物网站</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #ff6b6b;
-            --secondary-color: #4ecdc4;
-            --dark-color: #2d3436;
-            --light-color: #f9f9f9;
-            --gray-color: #636e72;
-            --border-color: #e0e0e0;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            background-color: #f5f5f5;
-            color: var(--dark-color);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        /* 头部样式 */
-        .header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .header-main {
-            padding: 15px 0;
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        .logo i {
-            margin-right: 5px;
-        }
-        
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            color: var(--dark-color);
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        
-        .nav-links a:hover {
-            background: #f5f5f5;
-        }
-        
-        .nav-links a.active {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .cart-count-badge {
-            position: relative;
-        }
-        
-        .cart-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--primary-color);
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-        
-        /* 结算页面内容 */
-        .checkout-container {
-            padding: 40px 0;
-        }
-        
-        .checkout-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .checkout-title {
-            font-size: 28px;
-            color: var(--dark-color);
-        }
-        
-        .checkout-steps {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--gray-color);
-        }
-        
-        .step.active {
-            color: var(--primary-color);
-        }
-        
-        .step-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .step.active .step-number {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        /* 结算内容布局 */
-        .checkout-content {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 30px;
-        }
-        
-        @media (max-width: 992px) {
-            .checkout-content {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* 收货地址 */
-        .shipping-section {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        
-        .section-title {
-            font-size: 20px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .section-title a {
-            font-size: 14px;
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        .address-info {
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        
-        .address-line {
-            margin-bottom: 5px;
-        }
-        
-        .no-address {
-            text-align: center;
-            padding: 30px;
-            color: var(--gray-color);
-        }
-        
-        .no-address i {
-            font-size: 48px;
-            margin-bottom: 15px;
-            color: #ddd;
-        }
-        
-        /* 商品列表 */
-        .products-section {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .checkout-item {
-            display: flex;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .checkout-item:last-child {
-            border-bottom: none;
-        }
-        
-        .item-image {
-            width: 80px;
-            height: 80px;
-            overflow: hidden;
-            border-radius: 4px;
-            margin-right: 15px;
-        }
-        
-        .item-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .item-details {
-            flex: 1;
-        }
-        
-        .item-name {
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        
-        .item-price {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-        
-        .item-quantity {
-            color: var(--gray-color);
-        }
-        
-        .item-subtotal {
-            font-weight: bold;
-            min-width: 80px;
-            text-align: right;
-        }
-        
-        /* 订单摘要 */
-        .order-summary {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
-        }
-        
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            color: var(--gray-color);
-        }
-        
-        .summary-row.total {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--primary-color);
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-            margin-top: 15px;
-        }
-        
-        /* 余额信息 */
-        .balance-info {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        
-        .balance-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .balance-amount {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        .balance-after {
-            border-top: 1px dashed var(--border-color);
-            padding-top: 10px;
-            margin-top: 10px;
-        }
-        
-        /* 支付按钮 */
-        .payment-button {
-            width: 100%;
-            padding: 18px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .payment-button:hover:not(:disabled) {
-            background: #ff5252;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
-        }
-        
-        .payment-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        /* 消息提示 */
-        .message {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        /* 页脚 */
-        .footer {
-            background: var(--dark-color);
-            color: white;
-            padding: 40px 0;
-            margin-top: 60px;
-        }
-        
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-            margin-top: 30px;
-            color: #bbb;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <!-- 头部 -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="products.php" class="logo">
-                    <i class="fas fa-shopping-bag"></i> 购物网站
-                </a>
-                
-                <div class="nav-links">
-                    <a href="products.php">
-                        <i class="fas fa-store"></i> 商城首页
-                    </a>
-                    <a href="cart.php" class="cart-count-badge">
-                        <i class="fas fa-shopping-cart"></i> 购物车
-                        <span class="cart-count"><?php echo count($cartItems); ?></span>
-                    </a>
-                    <a href="welcome.php">
-                        <i class="fas fa-user"></i> 个人中心
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+<?php $pageScripts = '
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const messages = document.querySelectorAll(".message");
+        messages.forEach(message => {
+            setTimeout(() => {
+                message.style.opacity = "0";
+                setTimeout(() => { message.remove(); }, 300);
+            }, 5000);
+        });
+    });
+</script>
+';
+require_once 'header.php'; ?>
 
-    <!-- 消息提示 -->
-    <?php if (isset($message)): ?>
-        <div class="container">
-            <div class="message <?php echo $message_type; ?>">
-                <?php echo htmlspecialchars($message); ?>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <!-- 结算内容 -->
-    <main class="container">
         <div class="checkout-container">
             <div class="checkout-header">
                 <h1 class="checkout-title">
@@ -761,21 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
         </div>
-    </main>
-
-    <script>
-        // 自动隐藏消息提示
-        document.addEventListener('DOMContentLoaded', function() {
-            const messages = document.querySelectorAll('.message');
-            messages.forEach(message => {
-                setTimeout(() => {
-                    message.style.opacity = '0';
-                    setTimeout(() => {
-                        message.remove();
-                    }, 300);
-                }, 5000);
-            });
-        });
-    </script>
+    </div><!-- close .container -->
+</main>
 </body>
 </html>
